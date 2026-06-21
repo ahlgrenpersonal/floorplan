@@ -1,0 +1,769 @@
+const STORAGE_KEY = "floorplan-layout-v4";
+const SOURCE_PLAN_SIZE = 1000;
+const PX_PER_FOOT = 19;
+
+const WORLD = {
+  widthFt: SOURCE_PLAN_SIZE / PX_PER_FOOT,
+  depthFt: SOURCE_PLAN_SIZE / PX_PER_FOOT,
+};
+
+const presets = [
+  { type: "king", name: "King bed", widthIn: 76, depthIn: 80, color: "#83d6c8" },
+  { type: "queen", name: "Queen bed", widthIn: 60, depthIn: 80, color: "#f3c35f" },
+  { type: "full", name: "Full bed", widthIn: 54, depthIn: 75, color: "#c7b7ff" },
+  { type: "crib", name: "DaVinci crib", widthIn: 52.125, depthIn: 28.125, color: "#f1a7a6" },
+];
+
+function imageRect(id, name, x, y, width, height, label = "") {
+  return {
+    id,
+    name,
+    x: x / PX_PER_FOOT,
+    y: y / PX_PER_FOOT,
+    widthFt: width / PX_PER_FOOT,
+    depthFt: height / PX_PER_FOOT,
+    label,
+  };
+}
+
+function imageDoor(
+  id,
+  name,
+  sweepX,
+  sweepY,
+  sweepWidth,
+  sweepDepth,
+  leafX,
+  leafY,
+  leafWidth,
+  leafHeight,
+  leafRotate = 0,
+  options = {},
+) {
+  return {
+    id,
+    name,
+    x: sweepX / PX_PER_FOOT,
+    y: sweepY / PX_PER_FOOT,
+    widthFt: sweepWidth / PX_PER_FOOT,
+    depthFt: sweepDepth / PX_PER_FOOT,
+    leaf: {
+      x: leafX / PX_PER_FOOT,
+      y: leafY / PX_PER_FOOT,
+      widthFt: leafWidth / PX_PER_FOOT,
+      depthFt: leafHeight / PX_PER_FOOT,
+      rotate: leafRotate,
+    },
+    openLeaf: options.openLeaf
+      ? {
+          x: options.openLeaf.x / PX_PER_FOOT,
+          y: options.openLeaf.y / PX_PER_FOOT,
+          widthFt: options.openLeaf.width / PX_PER_FOOT,
+          depthFt: options.openLeaf.height / PX_PER_FOOT,
+          rotate: options.openLeaf.rotate ?? 0,
+        }
+      : null,
+    showSweep: Boolean(options.showSweep),
+    open: true,
+  };
+}
+
+const exactRooms = [
+  imageRect("master", "Master suite", 122, 43, 230, 312, "16'0\" x 12'6\""),
+  imageRect("office", "Office/media", 510, 43, 245, 235, "15'7\" x 14'2\""),
+  imageRect("living", "Living", 122, 318, 328, 330, "30'0\" x 16'2\""),
+  imageRect("kitchen", "Kitchen", 414, 432, 158, 208, "10'2\" x 8'0\""),
+  imageRect("dining", "Dining", 258, 640, 315, 246, "14'6\" x 14'6\""),
+  imageRect("bed-left", "Bedroom", 586, 635, 170, 222, "14'2\" x 12'1\""),
+  imageRect("bed-right", "Bedroom", 755, 635, 224, 222, "14'0\" x 10'7\""),
+];
+
+const supportZones = [
+  imageRect("master-bath", "Master bath", 356, 43, 148, 154),
+  imageRect("master-closet", "Dressing", 356, 198, 148, 155),
+  imageRect("entry", "Entry", 590, 276, 216, 84),
+  imageRect("hall", "Hall", 590, 432, 275, 82),
+  imageRect("bath-core", "Bath/core", 472, 432, 116, 208),
+  imageRect("right-bath", "Bath", 835, 399, 144, 75),
+  imageRect("right-closet", "Dressing", 835, 474, 144, 153),
+];
+
+const doors = [
+  imageDoor("master-bath", "Master bath", 350, 96, 58, 62, 354, 101, 5, 52),
+  imageDoor("master-entry", "Master suite", 270, 292, 86, 70, 302, 352, 52, 5, 0, {
+    showSweep: true,
+  }),
+  imageDoor("master-dressing", "Dressing", 326, 254, 45, 50, 354, 258, 5, 42),
+  imageDoor("main-entry", "Entry", 840, 342, 62, 64, 848, 348, 5, 54),
+  imageDoor("laundry", "Laundry", 728, 438, 48, 48, 755, 450, 5, 36),
+  imageDoor("core-bath", "Bath", 582, 525, 58, 62, 588, 531, 5, 52),
+  imageDoor("left-bedroom", "Left bedroom", 628, 600, 82, 82, 682, 622, 74, 5, -50, {
+    openLeaf: { x: 626, y: 632, width: 78, height: 5, rotate: 52 },
+    showSweep: true,
+  }),
+  imageDoor("right-bedroom", "Right bedroom", 774, 600, 82, 82, 758, 622, 74, 5, 50, {
+    openLeaf: { x: 800, y: 632, width: 78, height: 5, rotate: 128 },
+    showSweep: true,
+  }),
+  imageDoor("right-bath", "Bath", 832, 454, 58, 58, 834, 454, 54, 5),
+  imageDoor("right-dressing", "Dressing", 830, 615, 52, 48, 835, 621, 44, 5),
+];
+
+const stage = document.querySelector("#stage");
+const plan = document.querySelector("#plan");
+const roomLayer = document.querySelector("#roomLayer");
+const doorLayer = document.querySelector("#doorLayer");
+const furnitureLayer = document.querySelector("#furnitureLayer");
+const presetGrid = document.querySelector("#presetGrid");
+const snapInput = document.querySelector("#snapInput");
+const scaleReadout = document.querySelector("#scaleReadout");
+const selectedName = document.querySelector("#selectedName");
+const selectedSize = document.querySelector("#selectedSize");
+const rotateSelected = document.querySelector("#rotateSelected");
+const duplicateSelected = document.querySelector("#duplicateSelected");
+const deleteSelected = document.querySelector("#deleteSelected");
+const openDoors = document.querySelector("#openDoors");
+const closeDoors = document.querySelector("#closeDoors");
+const clearLayout = document.querySelector("#clearLayout");
+const resetView = document.querySelector("#resetView");
+
+const state = {
+  snapInches: Number(snapInput.value),
+  selectedId: null,
+  pieces: [],
+  doors: doors.map((door) => ({ id: door.id, open: door.open })),
+  view: { x: 0, y: 0, zoom: 1 },
+};
+
+let dragState = null;
+let panState = null;
+let pinchState = null;
+const activeTouches = new Map();
+
+function uid() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function feetToPx(feet) {
+  return feet * PX_PER_FOOT;
+}
+
+function inchesToFeet(inches) {
+  return inches / 12;
+}
+
+function inchesToPx(inches) {
+  return feetToPx(inchesToFeet(inches));
+}
+
+function formatFeetValue(feet) {
+  const wholeFeet = Math.floor(feet);
+  const inches = Math.round((feet - wholeFeet) * 12);
+  if (inches === 12) return `${wholeFeet + 1}'0"`;
+  return `${wholeFeet}'${inches}"`;
+}
+
+function formatInches(inches) {
+  return formatFeetValue(inchesToFeet(inches));
+}
+
+function getDoorState(id) {
+  return state.doors.find((door) => door.id === id)?.open ?? true;
+}
+
+function setDoorState(id, open) {
+  const saved = state.doors.find((door) => door.id === id);
+  if (saved) saved.open = open;
+}
+
+function saveLayout() {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      snapInches: state.snapInches,
+      pieces: state.pieces,
+      doors: state.doors,
+    }),
+  );
+}
+
+function loadLayout() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+
+  try {
+    const saved = JSON.parse(raw);
+    if (Array.isArray(saved.pieces)) state.pieces = saved.pieces;
+    if (Array.isArray(saved.doors)) {
+      saved.doors.forEach((door) => setDoorState(door.id, Boolean(door.open)));
+    }
+    if (Number.isFinite(saved.snapInches)) state.snapInches = saved.snapInches;
+    snapInput.value = state.snapInches;
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+function getPieceSize(piece) {
+  const widthIn = piece.rotated ? piece.depthIn : piece.widthIn;
+  const depthIn = piece.rotated ? piece.widthIn : piece.depthIn;
+  return {
+    widthIn,
+    depthIn,
+    widthFt: inchesToFeet(widthIn),
+    depthFt: inchesToFeet(depthIn),
+    widthPx: inchesToPx(widthIn),
+    depthPx: inchesToPx(depthIn),
+  };
+}
+
+function getPieceRect(piece) {
+  const size = getPieceSize(piece);
+  return {
+    x: piece.x,
+    y: piece.y,
+    width: size.widthFt,
+    height: size.depthFt,
+  };
+}
+
+function rectContains(outer, inner) {
+  return (
+    inner.x >= outer.x &&
+    inner.y >= outer.y &&
+    inner.x + inner.width <= outer.x + outer.widthFt &&
+    inner.y + inner.height <= outer.y + outer.depthFt
+  );
+}
+
+function rectsIntersect(a, b) {
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+function findContainingRoom(piece) {
+  const rect = getPieceRect(piece);
+  return exactRooms.find((room) => rectContains(room, rect));
+}
+
+function getDoorSweep(door) {
+  if (!getDoorState(door.id)) {
+    return { x: door.x, y: door.y, width: 0, height: 0 };
+  }
+
+  return { x: door.x, y: door.y, width: door.widthFt, height: door.depthFt };
+}
+
+function getWarnings(piece) {
+  const warnings = [];
+  const rect = getPieceRect(piece);
+  const room = findContainingRoom(piece);
+
+  if (!room) warnings.push("outside exact room bounds");
+
+  state.pieces.forEach((other) => {
+    if (other.id !== piece.id && rectsIntersect(rect, getPieceRect(other))) warnings.push(`overlaps ${other.name}`);
+  });
+
+  doors.forEach((door) => {
+    const sweep = getDoorSweep(door);
+    if (rectsIntersect(rect, sweep)) {
+      warnings.push(`${door.name} door clearance blocked`);
+    }
+  });
+
+  return warnings;
+}
+
+function snap(value) {
+  if (!state.snapInches) return value;
+  const step = inchesToFeet(state.snapInches);
+  return Math.round(value / step) * step;
+}
+
+function clampPiece(piece) {
+  const size = getPieceSize(piece);
+  piece.x = Math.max(0, Math.min(WORLD.widthFt - size.widthFt, piece.x));
+  piece.y = Math.max(0, Math.min(WORLD.depthFt - size.depthFt, piece.y));
+}
+
+function addPiece(preset, x = WORLD.widthFt / 2, y = WORLD.depthFt / 2) {
+  const piece = {
+    id: uid(),
+    type: preset.type,
+    name: preset.name,
+    widthIn: preset.widthIn,
+    depthIn: preset.depthIn,
+    color: preset.color,
+    x,
+    y,
+    rotated: false,
+  };
+
+  clampPiece(piece);
+  state.pieces.push(piece);
+  state.selectedId = piece.id;
+  saveLayout();
+  render();
+}
+
+function getPresetSizeFeet(preset) {
+  return {
+    width: inchesToFeet(preset.widthIn),
+    height: inchesToFeet(preset.depthIn),
+  };
+}
+
+function getPreferredRoomIds(preset) {
+  if (preset.type === "king") return ["master", "bed-left", "bed-right", "living"];
+  if (preset.type === "queen") return ["bed-left", "master", "bed-right", "office"];
+  if (preset.type === "full") return ["bed-right", "bed-left", "office", "master"];
+  return ["bed-left", "bed-right", "master"];
+}
+
+function getRoomAtPoint(preferredPoint, preset) {
+  const pieceSize = getPresetSizeFeet(preset);
+  return exactRooms.find(
+    (room) =>
+      preferredPoint.x >= room.x &&
+      preferredPoint.x <= room.x + room.widthFt &&
+      preferredPoint.y >= room.y &&
+      preferredPoint.y <= room.y + room.depthFt &&
+      pieceSize.width <= room.widthFt &&
+      pieceSize.height <= room.depthFt,
+  );
+}
+
+function candidateFits(candidate, size) {
+  const rect = { x: candidate.x, y: candidate.y, width: size.width, height: size.height };
+  const overlapsPiece = state.pieces.some((piece) => rectsIntersect(rect, getPieceRect(piece)));
+  const blocksDoor = doors.some((door) => rectsIntersect(rect, getDoorSweep(door)));
+  return !overlapsPiece && !blocksDoor;
+}
+
+function findFreePositionInRoom(preset, room) {
+  const size = getPresetSizeFeet(preset);
+  const maxX = room.x + room.widthFt - size.width;
+  const maxY = room.y + room.depthFt - size.height;
+  if (maxX < room.x || maxY < room.y) return null;
+
+  const centered = {
+    x: room.x + (room.widthFt - size.width) / 2,
+    y: room.y + (room.depthFt - size.height) / 2,
+  };
+  if (candidateFits(centered, size)) return centered;
+
+  const step = 0.5;
+  for (let y = room.y; y <= maxY + 0.001; y += step) {
+    for (let x = room.x; x <= maxX + 0.001; x += step) {
+      const candidate = { x: snap(x), y: snap(y) };
+      if (candidateFits(candidate, size)) return candidate;
+    }
+  }
+
+  return centered;
+}
+
+function findDropPosition(preset, preferredPoint) {
+  const preferredIds = getPreferredRoomIds(preset);
+  const roomAtPoint = getRoomAtPoint(preferredPoint, preset);
+  const orderedRooms = [
+    ...preferredIds.map((id) => exactRooms.find((room) => room.id === id)),
+    roomAtPoint,
+  ].filter(Boolean);
+  const uniqueRooms = orderedRooms.filter((room, index) => orderedRooms.findIndex((item) => item.id === room.id) === index);
+
+  for (const room of uniqueRooms) {
+    const position = findFreePositionInRoom(preset, room);
+    if (position && candidateFits(position, getPresetSizeFeet(preset))) return position;
+  }
+
+  const fallbackRoom = uniqueRooms[0];
+  if (fallbackRoom) {
+    const size = getPresetSizeFeet(preset);
+    return {
+      x: fallbackRoom.x + (fallbackRoom.widthFt - size.width) / 2,
+      y: fallbackRoom.y + (fallbackRoom.depthFt - size.height) / 2,
+    };
+  }
+
+  return {
+    x: preferredPoint.x - inchesToFeet(preset.widthIn) / 2,
+    y: preferredPoint.y - inchesToFeet(preset.depthIn) / 2,
+  };
+}
+
+function setView(nextView) {
+  const stageRect = stage.getBoundingClientRect();
+  const planWidth = feetToPx(WORLD.widthFt);
+  const planHeight = feetToPx(WORLD.depthFt);
+  const minZoom = Math.min(stageRect.width / planWidth, stageRect.height / planHeight);
+  state.view.zoom = Math.max(minZoom * 0.88, Math.min(2.8, nextView.zoom));
+  state.view.x = nextView.x;
+  state.view.y = nextView.y;
+  plan.style.transform = `translate(${state.view.x}px, ${state.view.y}px) scale(${state.view.zoom})`;
+}
+
+function fitView() {
+  const stageRect = stage.getBoundingClientRect();
+  const planWidth = feetToPx(WORLD.widthFt);
+  const planHeight = feetToPx(WORLD.depthFt);
+  const zoom = Math.min(stageRect.width / planWidth, stageRect.height / planHeight) * 0.96;
+  setView({
+    zoom,
+    x: (stageRect.width - planWidth * zoom) / 2,
+    y: (stageRect.height - planHeight * zoom) / 2,
+  });
+}
+
+function clientToPlanPoint(clientX, clientY) {
+  const stageRect = stage.getBoundingClientRect();
+  return {
+    x: (clientX - stageRect.left - state.view.x) / state.view.zoom / PX_PER_FOOT,
+    y: (clientY - stageRect.top - state.view.y) / state.view.zoom / PX_PER_FOOT,
+  };
+}
+
+function getStageCenterPoint() {
+  const stageRect = stage.getBoundingClientRect();
+  return clientToPlanPoint(stageRect.left + stageRect.width / 2, stageRect.top + stageRect.height / 2);
+}
+
+function placeElement(el, item) {
+  el.style.left = `${feetToPx(item.x)}px`;
+  el.style.top = `${feetToPx(item.y)}px`;
+  el.style.width = `${feetToPx(item.widthFt)}px`;
+  el.style.height = `${feetToPx(item.depthFt)}px`;
+}
+
+function renderRooms() {
+  roomLayer.innerHTML = "";
+
+  supportZones.forEach((zone) => {
+    const el = document.createElement("div");
+    el.className = "room support-zone";
+    placeElement(el, zone);
+    el.innerHTML = `<span>${zone.name}</span>`;
+    roomLayer.append(el);
+  });
+
+  exactRooms.forEach((room) => {
+    const el = document.createElement("div");
+    el.className = "room exact-room";
+    placeElement(el, room);
+    el.innerHTML = `<strong>${room.name}</strong><span>${room.label}</span>`;
+    roomLayer.append(el);
+  });
+}
+
+function renderDoors() {
+  doorLayer.innerHTML = "";
+
+  doors.forEach((door) => {
+    const open = getDoorState(door.id);
+    const sweep = getDoorSweep(door);
+    const sweepEl = document.createElement("div");
+    sweepEl.className = `door-sweep ${open ? "open" : "closed"}`;
+    if (door.showSweep) sweepEl.classList.add("visible-swing");
+    sweepEl.style.left = `${feetToPx(sweep.x)}px`;
+    sweepEl.style.top = `${feetToPx(sweep.y)}px`;
+    sweepEl.style.width = `${feetToPx(sweep.width)}px`;
+    sweepEl.style.height = `${feetToPx(sweep.height)}px`;
+    doorLayer.append(sweepEl);
+
+    sweepEl.setAttribute("aria-label", `${door.name} door clearance ${open ? "shown" : "hidden"}`);
+  });
+}
+
+function renderPresets() {
+  presetGrid.innerHTML = "";
+  presets.forEach((preset) => {
+    const button = document.createElement("button");
+    button.className = "preset";
+    button.type = "button";
+    button.innerHTML = `<strong>${preset.name}</strong><span>${formatInches(preset.widthIn)} x ${formatInches(preset.depthIn)}</span>`;
+    button.addEventListener("click", () => {
+      const center = getStageCenterPoint();
+      const drop = findDropPosition(preset, center);
+      addPiece(preset, drop.x, drop.y);
+    });
+    presetGrid.append(button);
+  });
+}
+
+function renderPieces() {
+  furnitureLayer.innerHTML = "";
+  state.pieces.forEach((piece) => {
+    clampPiece(piece);
+    const size = getPieceSize(piece);
+    const warnings = getWarnings(piece);
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = `piece${piece.id === state.selectedId ? " selected" : ""}${warnings.length ? " warning" : ""}`;
+    el.style.left = `${feetToPx(piece.x)}px`;
+    el.style.top = `${feetToPx(piece.y)}px`;
+    el.style.setProperty("--w", `${size.widthPx}px`);
+    el.style.setProperty("--h", `${size.depthPx}px`);
+    el.style.setProperty("--piece-color", piece.color);
+    el.dataset.id = piece.id;
+    el.title = warnings.length ? warnings.join(", ") : "Fits inside exact room bounds";
+    el.textContent = piece.name.replace(" bed", "");
+    el.addEventListener("pointerdown", startDrag);
+    furnitureLayer.append(el);
+  });
+}
+
+function renderSelection() {
+  const selected = state.pieces.find((piece) => piece.id === state.selectedId);
+  const hasSelection = Boolean(selected);
+  rotateSelected.disabled = !hasSelection;
+  duplicateSelected.disabled = !hasSelection;
+  deleteSelected.disabled = !hasSelection;
+
+  if (!selected) {
+    selectedName.textContent = "No item selected";
+    selectedSize.textContent = "Tap a piece";
+    return;
+  }
+
+  const size = getPieceSize(selected);
+  const room = findContainingRoom(selected);
+  const warnings = getWarnings(selected);
+  const status = warnings.length ? warnings[0] : `fits in ${room?.name ?? "world"}`;
+  selectedName.textContent = selected.name;
+  selectedSize.textContent = `${formatInches(size.widthIn)} x ${formatInches(size.depthIn)} | ${status}`;
+}
+
+function render() {
+  plan.style.width = `${feetToPx(WORLD.widthFt)}px`;
+  plan.style.height = `${feetToPx(WORLD.depthFt)}px`;
+  scaleReadout.textContent = "image-calibrated plan";
+  renderRooms();
+  renderDoors();
+  renderPieces();
+  renderSelection();
+}
+
+function startDrag(event) {
+  const target = event.currentTarget;
+  const piece = state.pieces.find((item) => item.id === target.dataset.id);
+  if (!piece) return;
+
+  event.stopPropagation();
+  target.setPointerCapture(event.pointerId);
+  const point = clientToPlanPoint(event.clientX, event.clientY);
+  dragState = {
+    pointerId: event.pointerId,
+    piece,
+    offsetX: point.x - piece.x,
+    offsetY: point.y - piece.y,
+  };
+  state.selectedId = piece.id;
+  target.classList.add("dragging");
+  renderSelection();
+}
+
+function moveDrag(event) {
+  if (!dragState || dragState.pointerId !== event.pointerId) return;
+
+  const point = clientToPlanPoint(event.clientX, event.clientY);
+  dragState.piece.x = snap(point.x - dragState.offsetX);
+  dragState.piece.y = snap(point.y - dragState.offsetY);
+  clampPiece(dragState.piece);
+  renderPieces();
+  renderSelection();
+}
+
+function endDrag(event) {
+  if (!dragState || dragState.pointerId !== event.pointerId) return;
+  dragState = null;
+  saveLayout();
+  render();
+}
+
+function startPan(event) {
+  if (event.target.closest(".piece") || event.target.closest(".door")) return;
+  stage.setPointerCapture(event.pointerId);
+  panState = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    viewX: state.view.x,
+    viewY: state.view.y,
+  };
+}
+
+function movePan(event) {
+  if (!panState || panState.pointerId !== event.pointerId || pinchState) return;
+  setView({
+    ...state.view,
+    x: panState.viewX + event.clientX - panState.startX,
+    y: panState.viewY + event.clientY - panState.startY,
+  });
+}
+
+function endPan(event) {
+  if (panState?.pointerId === event.pointerId) panState = null;
+}
+
+function updatePinch() {
+  if (activeTouches.size !== 2) {
+    pinchState = null;
+    return;
+  }
+
+  const touches = [...activeTouches.values()];
+  const [a, b] = touches;
+  const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  const center = {
+    x: (a.clientX + b.clientX) / 2,
+    y: (a.clientY + b.clientY) / 2,
+  };
+
+  if (!pinchState) {
+    pinchState = {
+      distance,
+      center,
+      view: { ...state.view },
+      planPoint: clientToPlanPoint(center.x, center.y),
+    };
+    return;
+  }
+
+  const nextZoom = pinchState.view.zoom * (distance / pinchState.distance);
+  const stageRect = stage.getBoundingClientRect();
+  const centerInStage = {
+    x: center.x - stageRect.left,
+    y: center.y - stageRect.top,
+  };
+
+  setView({
+    zoom: nextZoom,
+    x: centerInStage.x - feetToPx(pinchState.planPoint.x) * nextZoom,
+    y: centerInStage.y - feetToPx(pinchState.planPoint.y) * nextZoom,
+  });
+}
+
+stage.addEventListener("pointerdown", (event) => {
+  activeTouches.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+  if (activeTouches.size === 1) startPan(event);
+  updatePinch();
+});
+
+stage.addEventListener("pointermove", (event) => {
+  if (activeTouches.has(event.pointerId)) {
+    activeTouches.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+    updatePinch();
+  }
+  movePan(event);
+});
+
+stage.addEventListener("pointerup", (event) => {
+  activeTouches.delete(event.pointerId);
+  endPan(event);
+  updatePinch();
+});
+
+stage.addEventListener("pointercancel", (event) => {
+  activeTouches.delete(event.pointerId);
+  endPan(event);
+  updatePinch();
+});
+
+window.addEventListener("pointermove", moveDrag);
+window.addEventListener("pointerup", endDrag);
+window.addEventListener("pointercancel", endDrag);
+
+stage.addEventListener(
+  "wheel",
+  (event) => {
+    event.preventDefault();
+    const point = clientToPlanPoint(event.clientX, event.clientY);
+    const nextZoom = state.view.zoom * (event.deltaY > 0 ? 0.92 : 1.08);
+    const stageRect = stage.getBoundingClientRect();
+    setView({
+      zoom: nextZoom,
+      x: event.clientX - stageRect.left - feetToPx(point.x) * nextZoom,
+      y: event.clientY - stageRect.top - feetToPx(point.y) * nextZoom,
+    });
+  },
+  { passive: false },
+);
+
+rotateSelected.addEventListener("click", () => {
+  const piece = state.pieces.find((item) => item.id === state.selectedId);
+  if (!piece) return;
+  piece.rotated = !piece.rotated;
+  clampPiece(piece);
+  saveLayout();
+  render();
+});
+
+duplicateSelected.addEventListener("click", () => {
+  const piece = state.pieces.find((item) => item.id === state.selectedId);
+  if (!piece) return;
+  const clone = { ...piece, id: uid(), x: piece.x + 1, y: piece.y + 1 };
+  clampPiece(clone);
+  state.pieces.push(clone);
+  state.selectedId = clone.id;
+  saveLayout();
+  render();
+});
+
+deleteSelected.addEventListener("click", () => {
+  state.pieces = state.pieces.filter((item) => item.id !== state.selectedId);
+  state.selectedId = null;
+  saveLayout();
+  render();
+});
+
+openDoors.addEventListener("click", () => {
+  state.doors.forEach((door) => {
+    door.open = true;
+  });
+  saveLayout();
+  render();
+});
+
+closeDoors.addEventListener("click", () => {
+  state.doors.forEach((door) => {
+    door.open = false;
+  });
+  saveLayout();
+  render();
+});
+
+clearLayout.addEventListener("click", () => {
+  state.pieces = [];
+  state.selectedId = null;
+  state.doors.forEach((door) => {
+    door.open = true;
+  });
+  saveLayout();
+  render();
+});
+
+snapInput.addEventListener("input", () => {
+  state.snapInches = Number(snapInput.value);
+  saveLayout();
+});
+
+resetView.addEventListener("click", fitView);
+window.addEventListener("resize", fitView);
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+
+loadLayout();
+renderPresets();
+
+function initializeView() {
+  fitView();
+  render();
+}
+
+initializeView();
+requestAnimationFrame(() => {
+  initializeView();
+});
+setTimeout(initializeView, 80);

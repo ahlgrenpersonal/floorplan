@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Floorplan" />
+    <title>Floorplan</title>
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="assets/icon.svg" />
+    <link rel="stylesheet" href="styles.css?v=20" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="top-bar">
+        <div>
+          <p class="eyebrow">Floorplan</p>
+          <h1>Apartment fit planner</h1>
+        </div>
+        <button class="icon-button" id="resetView" type="button" aria-label="Reset view">Fit</button>
+      </header>
+
+      <section class="workspace" aria-label="Exact floor plan workspace">
+        <div class="stage" id="stage">
+          <div class="plan" id="plan">
+            <img
+              class="reference-plan"
+              src="floor-plan.jpg"
+              alt="Dimensioned apartment floor plan reference"
+              draggable="false"
+            />
+            <div class="room-layer" id="roomLayer"></div>
+            <div class="door-layer" id="doorLayer"></div>
+            <div class="furniture-layer" id="furnitureLayer"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="bottom-panel" aria-label="Furniture controls">
+        <div class="panel-grip" aria-hidden="true"></div>
+
+        <section class="control-section">
+          <div class="section-title">
+            <h2>Furniture</h2>
+            <span id="scaleReadout">Exact dimensions</span>
+          </div>
+          <div class="preset-grid" id="presetGrid"></div>
+        </section>
+
+        <section class="control-section selected-section" id="selectedPanel">
+          <div class="section-title">
+            <h2 id="selectedName">No item selected</h2>
+            <span id="selectedSize">Tap a piece</span>
+          </div>
+          <div class="button-row">
+            <button type="button" id="rotateSelected" disabled>Rotate</button>
+            <button type="button" id="duplicateSelected" disabled>Duplicate</button>
+            <button type="button" id="deleteSelected" class="danger" disabled>Delete</button>
+          </div>
+        </section>
+
+        <section class="control-section compact-controls">
+          <label>
+            <span>Snap</span>
+            <input id="snapInput" type="range" min="0" max="12" step="1" value="3" />
+          </label>
+          <div class="button-row three-up">
+            <button type="button" id="openDoors">Show clearances</button>
+            <button type="button" id="closeDoors">Hide clearances</button>
+            <button type="button" id="clearLayout" class="danger">Clear</button>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <script src="app.js?v=20" type="module"></script>
+  </body>
+</html>
