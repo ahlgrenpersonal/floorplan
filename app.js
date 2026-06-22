@@ -20,6 +20,8 @@ const presets = [
   { type: "nightstand-26", name: "RH Bora 26\" nightstand", label: "26\"", widthIn: 26, depthIn: 18, color: "#b8d49a" },
   { type: "nightstand-38", name: "RH Bora 38\" nightstand", label: "38\"", widthIn: 38, depthIn: 18, color: "#aacd8a" },
   { type: "dresser", name: "RH Bora Dresser", label: "Dresser", widthIn: 72, depthIn: 20, color: "#d1b37a" },
+  { type: "cosmo-dresser-kids", name: "Cosmo Dresser (kids)", label: "Cosmo", widthIn: 56, depthIn: 19, color: "#e1c27b" },
+  { type: "cosmo-nightstand-kids", name: "Cosmo Nightstand (kids)", label: "Cosmo NS", widthIn: 22.5, depthIn: 18, color: "#d8cf88" },
   { type: "dining-table-long", name: "Miles Dining Table (long)", label: "80\"", widthIn: 80, depthIn: 43, color: "#d6c28f" },
   { type: "dining-table-short", name: "Miles Dining Table (short)", label: "60\"", widthIn: 60, depthIn: 43, color: "#cdb87b" },
   { type: "cybex-stroller", name: "Cybex stroller", label: "Cybex", widthIn: 42.3, depthIn: 26, color: "#a7c7b8" },
