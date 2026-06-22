@@ -18,6 +18,9 @@ const presets = [
   { type: "nightstand-26", name: "RH Bora 26\" nightstand", label: "26\"", widthIn: 26, depthIn: 18, color: "#b8d49a" },
   { type: "nightstand-38", name: "RH Bora 38\" nightstand", label: "38\"", widthIn: 38, depthIn: 18, color: "#aacd8a" },
   { type: "dresser", name: "RH Bora Dresser", label: "Dresser", widthIn: 72, depthIn: 20, color: "#d1b37a" },
+  { type: "dining-table-long", name: "Miles Dining Table (long)", label: "80\"", widthIn: 80, depthIn: 43, color: "#d6c28f" },
+  { type: "dining-table-short", name: "Miles Dining Table (short)", label: "60\"", widthIn: 60, depthIn: 43, color: "#cdb87b" },
+  { type: "viv-swivel-chair", name: "Viv swivel chair", label: "Viv", widthIn: 29.5, depthIn: 31, color: "#f0b6a6" },
 ];
 
 function imageRect(id, name, x, y, width, height, label = "") {
@@ -237,6 +240,8 @@ function getPreferredRoomIds(preset) {
   if (preset.type === "tv-stand") return ["living", "master", "bed-left", "bed-right", "office"];
   if (preset.type.startsWith("nightstand")) return ["master", "bed-left", "bed-right", "office"];
   if (preset.type === "dresser") return ["master", "bed-left", "bed-right", "office"];
+  if (preset.type.startsWith("dining-table")) return ["dining", "living", "office"];
+  if (preset.type === "viv-swivel-chair") return ["living", "master", "bed-left", "bed-right", "office"];
   return ["bed-left", "bed-right", "master"];
 }
 
