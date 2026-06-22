@@ -51,6 +51,11 @@ input {
   color: #f8fafc;
 }
 
+.top-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .eyebrow,
 h1,
 h2,
@@ -100,6 +105,14 @@ h2 {
   min-height: 0;
   overflow: hidden;
   touch-action: none;
+}
+
+.app-shell.panel-hidden {
+  grid-template-rows: auto 1fr;
+}
+
+.app-shell.panel-hidden .bottom-panel {
+  display: none;
 }
 
 .stage {
@@ -291,9 +304,9 @@ h2 {
 
 .preset {
   display: grid;
-  gap: 3px;
-  min-height: 58px;
-  padding: 7px 5px;
+  gap: 2px;
+  min-height: 44px;
+  padding: 4px;
   border-color: #cbd5e1;
 }
 
@@ -305,12 +318,12 @@ h2 {
 }
 
 .preset strong {
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .preset span {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .button-row {
@@ -360,6 +373,10 @@ input[type="range"] {
     grid-template-rows: auto 1fr;
   }
 
+  .app-shell.panel-hidden {
+    grid-template-columns: 1fr;
+  }
+
   .top-bar {
     grid-column: 1 / -1;
   }
@@ -372,6 +389,11 @@ input[type="range"] {
   }
 
   .preset-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .preset {
+    min-height: 42px;
   }
 }

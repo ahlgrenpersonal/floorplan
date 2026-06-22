@@ -11,7 +11,7 @@
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="assets/icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=31" />
+    <link rel="stylesheet" href="styles.css?v=33" />
   </head>
   <body>
     <main class="app-shell">
@@ -20,7 +20,10 @@
           <p class="eyebrow">Floorplan</p>
           <h1>Apartment fit planner</h1>
         </div>
-        <button class="icon-button" id="resetView" type="button" aria-label="Reset view">Fit</button>
+        <div class="top-actions">
+          <button class="icon-button" id="togglePanel" type="button" aria-label="Show floor plan only">Plan</button>
+          <button class="icon-button" id="resetView" type="button" aria-label="Reset view">Fit</button>
+        </div>
       </header>
 
       <section class="workspace" aria-label="Exact floor plan workspace">
@@ -69,6 +72,6 @@
       </aside>
     </main>
 
-    <script src="app.js?v=31" type="module"></script>
+    <script src="app.js?v=33" type="module"></script>
   </body>
 </html>

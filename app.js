@@ -13,6 +13,8 @@ const presets = [
   { type: "full", name: "Full bed", label: "Full", widthIn: 54, depthIn: 75, color: "#c7b7ff" },
   { type: "crib", name: "DaVinci crib", label: "Crib", widthIn: 55, depthIn: 31, color: "#f1a7a6" },
   { type: "sofa", name: "RH Sofa", label: "Sofa", widthIn: 108, depthIn: 41.5, color: "#9ec5e6" },
+  { type: "forma-coffee-table", name: "Forma coffee table", label: "Forma", widthIn: 47, depthIn: 27.5, color: "#c8b58f" },
+  { type: "viv-swivel-chair", name: "Viv swivel chair", label: "Viv", widthIn: 29.5, depthIn: 31, color: "#f0b6a6" },
   { type: "tv-stand", name: "TV stand", label: "TV", widthIn: 63, depthIn: 18, color: "#d9b48f" },
   { type: "nightstand-20-closed", name: "RH Bora 20\" closed nightstand", label: "20\"", widthIn: 20, depthIn: 18, color: "#c5dea3" },
   { type: "nightstand-26", name: "RH Bora 26\" nightstand", label: "26\"", widthIn: 26, depthIn: 18, color: "#b8d49a" },
@@ -20,11 +22,9 @@ const presets = [
   { type: "dresser", name: "RH Bora Dresser", label: "Dresser", widthIn: 72, depthIn: 20, color: "#d1b37a" },
   { type: "dining-table-long", name: "Miles Dining Table (long)", label: "80\"", widthIn: 80, depthIn: 43, color: "#d6c28f" },
   { type: "dining-table-short", name: "Miles Dining Table (short)", label: "60\"", widthIn: 60, depthIn: 43, color: "#cdb87b" },
-  { type: "viv-swivel-chair", name: "Viv swivel chair", label: "Viv", widthIn: 29.5, depthIn: 31, color: "#f0b6a6" },
   { type: "cybex-stroller", name: "Cybex stroller", label: "Cybex", widthIn: 42.3, depthIn: 26, color: "#a7c7b8" },
   { type: "adult-scooter", name: "Adult scooter", label: "Scoot", widthIn: 35, depthIn: 21, color: "#a8b8d8" },
   { type: "micro-scooter", name: "Micro scooter", label: "Micro", widthIn: 23, depthIn: 10.75, color: "#b7a8d8" },
-  { type: "forma-coffee-table", name: "Forma coffee table", label: "Forma", widthIn: 47, depthIn: 27.5, color: "#c8b58f" },
 ];
 
 function imageRect(id, name, x, y, width, height, label = "") {
@@ -71,11 +71,13 @@ const rotateSelected = document.querySelector("#rotateSelected");
 const duplicateSelected = document.querySelector("#duplicateSelected");
 const deleteSelected = document.querySelector("#deleteSelected");
 const clearLayout = document.querySelector("#clearLayout");
+const togglePanel = document.querySelector("#togglePanel");
 const resetView = document.querySelector("#resetView");
 
 const state = {
   selectedId: null,
   pieces: [],
+  panelHidden: false,
   view: { x: 0, y: 0, zoom: 1 },
 };
 
@@ -393,7 +395,10 @@ function renderPresets() {
     const button = document.createElement("button");
     button.className = "preset";
     button.type = "button";
-    button.innerHTML = `<strong>${preset.name}</strong><span>${formatInches(preset.widthIn)} x ${formatInches(preset.depthIn)}</span>`;
+    const sizeLabel = `${formatInches(preset.widthIn)} x ${formatInches(preset.depthIn)}`;
+    button.title = `${preset.name} ${sizeLabel}`;
+    button.setAttribute("aria-label", `${preset.name} ${sizeLabel}`);
+    button.innerHTML = `<strong>${preset.name}</strong><span>${sizeLabel}</span>`;
     button.addEventListener("click", () => {
       const center = getStageCenterPoint();
       const drop = findDropPosition(preset, center);
@@ -447,6 +452,9 @@ function renderSelection() {
 }
 
 function render() {
+  document.querySelector(".app-shell").classList.toggle("panel-hidden", state.panelHidden);
+  togglePanel.textContent = state.panelHidden ? "Tools" : "Plan";
+  togglePanel.setAttribute("aria-label", state.panelHidden ? "Show furniture controls" : "Show floor plan only");
   plan.style.width = `${feetToPx(WORLD.widthFt)}px`;
   plan.style.height = `${feetToPx(WORLD.depthFt)}px`;
   scaleReadout.textContent = "image-calibrated plan";
@@ -633,6 +641,12 @@ clearLayout.addEventListener("click", () => {
   state.selectedId = null;
   saveLayout();
   render();
+});
+
+togglePanel.addEventListener("click", () => {
+  state.panelHidden = !state.panelHidden;
+  render();
+  requestAnimationFrame(fitView);
 });
 
 resetView.addEventListener("click", fitView);
