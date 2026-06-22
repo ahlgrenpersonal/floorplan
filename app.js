@@ -51,7 +51,6 @@ const plan = document.querySelector("#plan");
 const roomLayer = document.querySelector("#roomLayer");
 const furnitureLayer = document.querySelector("#furnitureLayer");
 const presetGrid = document.querySelector("#presetGrid");
-const snapInput = document.querySelector("#snapInput");
 const scaleReadout = document.querySelector("#scaleReadout");
 const selectedName = document.querySelector("#selectedName");
 const selectedSize = document.querySelector("#selectedSize");
@@ -62,7 +61,6 @@ const clearLayout = document.querySelector("#clearLayout");
 const resetView = document.querySelector("#resetView");
 
 const state = {
-  snapInches: Number(snapInput.value),
   selectedId: null,
   pieces: [],
   view: { x: 0, y: 0, zoom: 1 },
@@ -104,7 +102,6 @@ function saveLayout() {
   localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({
-      snapInches: state.snapInches,
       pieces: state.pieces,
     }),
   );
@@ -117,8 +114,6 @@ function loadLayout() {
   try {
     const saved = JSON.parse(raw);
     if (Array.isArray(saved.pieces)) state.pieces = saved.pieces;
-    if (Number.isFinite(saved.snapInches)) state.snapInches = saved.snapInches;
-    snapInput.value = state.snapInches;
   } catch {
     localStorage.removeItem(STORAGE_KEY);
   }
@@ -180,9 +175,7 @@ function getWarnings(piece) {
 }
 
 function snap(value) {
-  if (!state.snapInches) return value;
-  const step = inchesToFeet(state.snapInches);
-  return Math.round(value / step) * step;
+  return Math.round(feetToPx(value)) / PX_PER_FOOT;
 }
 
 function clampPiece(piece) {
@@ -605,11 +598,6 @@ clearLayout.addEventListener("click", () => {
   state.selectedId = null;
   saveLayout();
   render();
-});
-
-snapInput.addEventListener("input", () => {
-  state.snapInches = Number(snapInput.value);
-  saveLayout();
 });
 
 resetView.addEventListener("click", fitView);
