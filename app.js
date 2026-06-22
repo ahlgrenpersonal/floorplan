@@ -21,6 +21,9 @@ const presets = [
   { type: "dining-table-long", name: "Miles Dining Table (long)", label: "80\"", widthIn: 80, depthIn: 43, color: "#d6c28f" },
   { type: "dining-table-short", name: "Miles Dining Table (short)", label: "60\"", widthIn: 60, depthIn: 43, color: "#cdb87b" },
   { type: "viv-swivel-chair", name: "Viv swivel chair", label: "Viv", widthIn: 29.5, depthIn: 31, color: "#f0b6a6" },
+  { type: "cybex-stroller", name: "Cybex stroller", label: "Cybex", widthIn: 42.3, depthIn: 26, color: "#a7c7b8" },
+  { type: "adult-scooter", name: "Adult scooter", label: "Scoot", widthIn: 35, depthIn: 21, color: "#a8b8d8" },
+  { type: "micro-scooter", name: "Micro scooter", label: "Micro", widthIn: 23, depthIn: 10.75, color: "#b7a8d8" },
 ];
 
 function imageRect(id, name, x, y, width, height, label = "") {
@@ -102,6 +105,7 @@ function formatInches(inches) {
   const inchText = Number.isInteger(remainingInches)
     ? String(remainingInches)
     : String(remainingInches).replace(/0+$/, "");
+  if (wholeFeet === 0) return `${inchText}"`;
   return `${wholeFeet}'${inchText}"`;
 }
 
@@ -242,6 +246,8 @@ function getPreferredRoomIds(preset) {
   if (preset.type === "dresser") return ["master", "bed-left", "bed-right", "office"];
   if (preset.type.startsWith("dining-table")) return ["dining", "living", "office"];
   if (preset.type === "viv-swivel-chair") return ["living", "master", "bed-left", "bed-right", "office"];
+  if (preset.type === "cybex-stroller") return ["living", "master", "office"];
+  if (preset.type.endsWith("scooter")) return ["living", "master", "office"];
   return ["bed-left", "bed-right", "master"];
 }
 
