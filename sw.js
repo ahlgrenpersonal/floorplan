@@ -1,11 +1,12 @@
-const CACHE_NAME = "floorplan-v36";
+const CACHE_NAME = "floorplan-v37";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=36",
-  "./app.js?v=36",
+  "./styles.css?v=37",
+  "./app.js?v=37",
   "./manifest.webmanifest",
   "./floor-plan.jpg",
+  "./floor-plan-f.png",
   "./assets/icon.svg",
 ];
 

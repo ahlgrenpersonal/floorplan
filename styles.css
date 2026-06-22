@@ -52,7 +52,17 @@ input {
 
 .top-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+.plan-switch {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .eyebrow,
@@ -82,6 +92,7 @@ h2 {
 }
 
 .icon-button,
+.plan-button,
 .preset,
 .button-row button {
   min-height: 42px;
@@ -98,6 +109,20 @@ h2 {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
   font-size: 13px;
+}
+
+.plan-button {
+  width: 36px;
+  min-height: 36px;
+  border-color: transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+}
+
+.plan-button.active {
+  background: #f8fafc;
+  color: #10283a;
 }
 
 .workspace {

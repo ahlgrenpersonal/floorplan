@@ -1,13 +1,8 @@
 const STORAGE_KEY = "floorplan-layout-v5";
 const URL_LAYOUT_PARAM = "layout";
 const URL_LAYOUT_VERSION = 1;
-const SOURCE_PLAN_SIZE = 1000;
-const PX_PER_FOOT = 19;
-
-const WORLD = {
-  widthFt: SOURCE_PLAN_SIZE / PX_PER_FOOT,
-  depthFt: SOURCE_PLAN_SIZE / PX_PER_FOOT,
-};
+const PLAN_URL_PARAM = "plan";
+const DEFAULT_PLAN_ID = "H";
 
 const presets = [
   { type: "king", name: "King bed", label: "King", widthIn: 76, depthIn: 80, color: "#83d6c8" },
@@ -31,40 +26,98 @@ const presets = [
   { type: "micro-scooter", name: "Micro scooter", label: "Micro", widthIn: 23, depthIn: 10.75, color: "#b7a8d8" },
 ];
 
-function imageRect(id, name, x, y, width, height, label = "") {
+function imageRect(pxPerFoot, id, name, x, y, width, height, label = "") {
   return {
     id,
     name,
-    x: x / PX_PER_FOOT,
-    y: y / PX_PER_FOOT,
-    widthFt: width / PX_PER_FOOT,
-    depthFt: height / PX_PER_FOOT,
+    x: x / pxPerFoot,
+    y: y / pxPerFoot,
+    widthFt: width / pxPerFoot,
+    depthFt: height / pxPerFoot,
     label,
   };
 }
 
-const exactRooms = [
-  imageRect("master", "Master suite", 122, 43, 230, 312, "16'0\" x 12'6\""),
-  imageRect("office", "Office/media", 510, 43, 245, 235, "15'7\" x 14'2\""),
-  imageRect("living", "Living", 122, 318, 328, 330, "30'0\" x 16'2\""),
-  imageRect("kitchen", "Kitchen", 414, 432, 158, 208, "10'2\" x 8'0\""),
-  imageRect("dining", "Dining", 258, 640, 315, 246, "14'6\" x 14'6\""),
-  imageRect("bed-left", "Bedroom", 586, 635, 170, 222, "14'2\" x 12'1\""),
-  imageRect("bed-right", "Bedroom", 755, 635, 224, 222, "14'0\" x 10'7\""),
-];
+function labeledRoom(pxPerFoot, id, name, x, y, widthFt, depthFt, label) {
+  return {
+    id,
+    name,
+    x: x / pxPerFoot,
+    y: y / pxPerFoot,
+    widthFt,
+    depthFt,
+    label,
+  };
+}
 
-const supportZones = [
-  imageRect("master-bath", "Master bath", 356, 43, 148, 154),
-  imageRect("master-closet", "Dressing", 356, 198, 148, 155),
-  imageRect("entry", "Entry", 590, 276, 216, 84),
-  imageRect("hall", "Hall", 590, 432, 275, 82),
-  imageRect("bath-core", "Bath/core", 472, 432, 116, 208),
-  imageRect("right-bath", "Bath", 835, 399, 144, 75),
-  imageRect("right-closet", "Dressing", 835, 474, 144, 153),
-];
+function createPlanH() {
+  const pxPerFoot = 19;
+  return {
+    id: "H",
+    name: "H",
+    image: "floor-plan.jpg",
+    sourceWidth: 999,
+    sourceHeight: 1000,
+    pxPerFoot,
+    exactRooms: [
+      imageRect(pxPerFoot, "master", "Master suite", 122, 43, 230, 312, "16'0\" x 12'6\""),
+      imageRect(pxPerFoot, "office", "Office/media", 510, 43, 245, 235, "15'7\" x 14'2\""),
+      imageRect(pxPerFoot, "living", "Living", 122, 318, 328, 330, "30'0\" x 16'2\""),
+      imageRect(pxPerFoot, "kitchen", "Kitchen", 414, 432, 158, 208, "10'2\" x 8'0\""),
+      imageRect(pxPerFoot, "dining", "Dining", 258, 640, 315, 246, "14'6\" x 14'6\""),
+      imageRect(pxPerFoot, "bed-left", "Bedroom", 586, 635, 170, 222, "14'2\" x 12'1\""),
+      imageRect(pxPerFoot, "bed-right", "Bedroom", 755, 635, 224, 222, "14'0\" x 10'7\""),
+    ],
+    supportZones: [
+      imageRect(pxPerFoot, "master-bath", "Master bath", 356, 43, 148, 154),
+      imageRect(pxPerFoot, "master-closet", "Dressing", 356, 198, 148, 155),
+      imageRect(pxPerFoot, "entry", "Entry", 590, 276, 216, 84),
+      imageRect(pxPerFoot, "hall", "Hall", 590, 432, 275, 82),
+      imageRect(pxPerFoot, "bath-core", "Bath/core", 472, 432, 116, 208),
+      imageRect(pxPerFoot, "right-bath", "Bath", 835, 399, 144, 75),
+      imageRect(pxPerFoot, "right-closet", "Dressing", 835, 474, 144, 153),
+    ],
+  };
+}
+
+function createPlanF() {
+  const pxPerFoot = 14.4;
+  return {
+    id: "F",
+    name: "F",
+    image: "floor-plan-f.png",
+    sourceWidth: 771,
+    sourceHeight: 805,
+    pxPerFoot,
+    exactRooms: [
+      labeledRoom(pxPerFoot, "master", "Master suite", 434, 58, 17.25, 16.25, "17'3\" x 16'3\""),
+      labeledRoom(pxPerFoot, "office", "Office/media", 128, 180, 14, 8, "14'0\" x 8'0\""),
+      labeledRoom(pxPerFoot, "living", "Living", 333, 293, 27, 16.083, "27'0\" x 16'1\""),
+      labeledRoom(pxPerFoot, "kitchen", "Kitchen", 333, 343, 11.167, 8, "11'2\" x 8'0\""),
+      labeledRoom(pxPerFoot, "dining", "Dining", 333, 555, 14.25, 10, "14'3\" x 10'0\""),
+      labeledRoom(pxPerFoot, "bed-left", "Bedroom", 5, 514, 14, 10.75, "14'0\" x 10'9\""),
+      labeledRoom(pxPerFoot, "bed-right", "Bedroom", 164, 514, 14, 12, "14'0\" x 12'0\""),
+    ],
+    supportZones: [
+      imageRect(pxPerFoot, "storage", "Storage", 42, 168, 86, 88),
+      imageRect(pxPerFoot, "master-bath", "Master bath", 295, 58, 139, 122),
+      imageRect(pxPerFoot, "master-closet", "Dressing", 323, 180, 113, 120),
+      imageRect(pxPerFoot, "entry", "Entry", 42, 289, 86, 66),
+      imageRect(pxPerFoot, "bath-left", "Bath", 5, 357, 134, 158),
+      imageRect(pxPerFoot, "bath-core", "Bath/core", 185, 357, 146, 158),
+      imageRect(pxPerFoot, "hall", "Hall", 139, 515, 192, 68),
+    ],
+  };
+}
+
+const floorPlans = {
+  H: createPlanH(),
+  F: createPlanF(),
+};
 
 const stage = document.querySelector("#stage");
 const plan = document.querySelector("#plan");
+const referencePlan = document.querySelector("#referencePlan");
 const roomLayer = document.querySelector("#roomLayer");
 const furnitureLayer = document.querySelector("#furnitureLayer");
 const presetGrid = document.querySelector("#presetGrid");
@@ -77,8 +130,10 @@ const deleteSelected = document.querySelector("#deleteSelected");
 const clearLayout = document.querySelector("#clearLayout");
 const togglePanel = document.querySelector("#togglePanel");
 const resetView = document.querySelector("#resetView");
+const planButtons = [...document.querySelectorAll("[data-plan-id]")];
 
 const state = {
+  planId: getPlanIdFromUrl(),
   selectedId: null,
   pieces: [],
   panelHidden: false,
@@ -94,8 +149,28 @@ function uid() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+function resolvePlanId(planId) {
+  return floorPlans[planId] ? planId : DEFAULT_PLAN_ID;
+}
+
+function getPlanIdFromUrl() {
+  return resolvePlanId(new URLSearchParams(window.location.search).get(PLAN_URL_PARAM));
+}
+
+function getActivePlan() {
+  return floorPlans[state.planId] ?? floorPlans[DEFAULT_PLAN_ID];
+}
+
+function getWorld() {
+  const activePlan = getActivePlan();
+  return {
+    widthFt: activePlan.sourceWidth / activePlan.pxPerFoot,
+    depthFt: activePlan.sourceHeight / activePlan.pxPerFoot,
+  };
+}
+
 function feetToPx(feet) {
-  return feet * PX_PER_FOOT;
+  return feet * getActivePlan().pxPerFoot;
 }
 
 function inchesToFeet(inches) {
@@ -169,6 +244,7 @@ function pieceFromStored(rawPiece) {
 function serializeLayoutForUrl() {
   return {
     v: URL_LAYOUT_VERSION,
+    fp: state.planId,
     p: state.pieces.map((piece) => ({
       t: piece.type,
       x: roundForUrl(piece.x),
@@ -186,6 +262,11 @@ function serializeLayoutForUrl() {
 
 function updateLayoutUrl() {
   const url = new URL(window.location.href);
+  if (state.planId === DEFAULT_PLAN_ID) {
+    url.searchParams.delete(PLAN_URL_PARAM);
+  } else {
+    url.searchParams.set(PLAN_URL_PARAM, state.planId);
+  }
   if (state.pieces.length) {
     url.searchParams.set(URL_LAYOUT_PARAM, encodeBase64Url(JSON.stringify(serializeLayoutForUrl())));
   } else {
@@ -194,10 +275,15 @@ function updateLayoutUrl() {
   window.history.replaceState(null, "", url);
 }
 
+function getStorageKey(planId = state.planId) {
+  return planId === DEFAULT_PLAN_ID ? STORAGE_KEY : `${STORAGE_KEY}-${planId}`;
+}
+
 function saveLayout() {
   localStorage.setItem(
-    STORAGE_KEY,
+    getStorageKey(),
     JSON.stringify({
+      planId: state.planId,
       pieces: state.pieces,
     }),
   );
@@ -210,11 +296,12 @@ function loadLayoutFromUrl() {
 
   try {
     const decoded = JSON.parse(decodeBase64Url(encoded));
+    state.planId = resolvePlanId(decoded.fp ?? decoded.planId ?? decoded.plan ?? getPlanIdFromUrl());
     const rawPieces = Array.isArray(decoded.p) ? decoded.p : decoded.pieces;
     if (!Array.isArray(rawPieces)) return false;
     state.pieces = rawPieces.map(pieceFromStored).filter(Boolean);
     state.selectedId = null;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ pieces: state.pieces }));
+    localStorage.setItem(getStorageKey(), JSON.stringify({ planId: state.planId, pieces: state.pieces }));
     updateLayoutUrl();
     return true;
   } catch {
@@ -223,7 +310,7 @@ function loadLayoutFromUrl() {
 }
 
 function loadLayoutFromStorage() {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = localStorage.getItem(getStorageKey());
   if (!raw) return false;
 
   try {
@@ -281,7 +368,7 @@ function rectsIntersect(a, b) {
 
 function findContainingRoom(piece) {
   const rect = getPieceRect(piece);
-  return exactRooms.find((room) => rectContains(room, rect));
+  return getActivePlan().exactRooms.find((room) => rectContains(room, rect));
 }
 
 function getWarnings(piece) {
@@ -299,16 +386,17 @@ function getWarnings(piece) {
 }
 
 function snap(value) {
-  return Math.round(feetToPx(value)) / PX_PER_FOOT;
+  return Math.round(feetToPx(value)) / getActivePlan().pxPerFoot;
 }
 
 function clampPiece(piece) {
   const size = getPieceSize(piece);
-  piece.x = Math.max(0, Math.min(WORLD.widthFt - size.widthFt, piece.x));
-  piece.y = Math.max(0, Math.min(WORLD.depthFt - size.depthFt, piece.y));
+  const world = getWorld();
+  piece.x = Math.max(0, Math.min(world.widthFt - size.widthFt, piece.x));
+  piece.y = Math.max(0, Math.min(world.depthFt - size.depthFt, piece.y));
 }
 
-function addPiece(preset, x = WORLD.widthFt / 2, y = WORLD.depthFt / 2) {
+function addPiece(preset, x = getWorld().widthFt / 2, y = getWorld().depthFt / 2) {
   const piece = {
     id: uid(),
     type: preset.type,
@@ -355,7 +443,7 @@ function getPreferredRoomIds(preset) {
 
 function getRoomAtPoint(preferredPoint, preset) {
   const pieceSize = getPresetSizeFeet(preset);
-  return exactRooms.find(
+  return getActivePlan().exactRooms.find(
     (room) =>
       preferredPoint.x >= room.x &&
       preferredPoint.x <= room.x + room.widthFt &&
@@ -398,6 +486,7 @@ function findFreePositionInRoom(preset, room) {
 function findDropPosition(preset, preferredPoint) {
   const preferredIds = getPreferredRoomIds(preset);
   const roomAtPoint = getRoomAtPoint(preferredPoint, preset);
+  const exactRooms = getActivePlan().exactRooms;
   const orderedRooms = [
     ...preferredIds.map((id) => exactRooms.find((room) => room.id === id)),
     roomAtPoint,
@@ -426,8 +515,9 @@ function findDropPosition(preset, preferredPoint) {
 
 function setView(nextView) {
   const stageRect = stage.getBoundingClientRect();
-  const planWidth = feetToPx(WORLD.widthFt);
-  const planHeight = feetToPx(WORLD.depthFt);
+  const world = getWorld();
+  const planWidth = feetToPx(world.widthFt);
+  const planHeight = feetToPx(world.depthFt);
   const minZoom = Math.min(stageRect.width / planWidth, stageRect.height / planHeight);
   state.view.zoom = Math.max(minZoom * 0.88, Math.min(2.8, nextView.zoom));
   state.view.x = nextView.x;
@@ -437,8 +527,9 @@ function setView(nextView) {
 
 function fitView() {
   const stageRect = stage.getBoundingClientRect();
-  const planWidth = feetToPx(WORLD.widthFt);
-  const planHeight = feetToPx(WORLD.depthFt);
+  const world = getWorld();
+  const planWidth = feetToPx(world.widthFt);
+  const planHeight = feetToPx(world.depthFt);
   const zoom = Math.min(stageRect.width / planWidth, stageRect.height / planHeight) * 0.96;
   setView({
     zoom,
@@ -450,8 +541,8 @@ function fitView() {
 function clientToPlanPoint(clientX, clientY) {
   const stageRect = stage.getBoundingClientRect();
   return {
-    x: (clientX - stageRect.left - state.view.x) / state.view.zoom / PX_PER_FOOT,
-    y: (clientY - stageRect.top - state.view.y) / state.view.zoom / PX_PER_FOOT,
+    x: (clientX - stageRect.left - state.view.x) / state.view.zoom / getActivePlan().pxPerFoot,
+    y: (clientY - stageRect.top - state.view.y) / state.view.zoom / getActivePlan().pxPerFoot,
   };
 }
 
@@ -470,7 +561,7 @@ function placeElement(el, item) {
 function renderRooms() {
   roomLayer.innerHTML = "";
 
-  supportZones.forEach((zone) => {
+  getActivePlan().supportZones.forEach((zone) => {
     const el = document.createElement("div");
     el.className = "room support-zone";
     placeElement(el, zone);
@@ -478,7 +569,7 @@ function renderRooms() {
     roomLayer.append(el);
   });
 
-  exactRooms.forEach((room) => {
+  getActivePlan().exactRooms.forEach((room) => {
     const el = document.createElement("div");
     el.className = "room exact-room";
     placeElement(el, room);
@@ -554,12 +645,34 @@ function render() {
   document.querySelector(".app-shell").classList.toggle("panel-hidden", state.panelHidden);
   togglePanel.textContent = state.panelHidden ? "Tools" : "Plan";
   togglePanel.setAttribute("aria-label", state.panelHidden ? "Show furniture controls" : "Show floor plan only");
-  plan.style.width = `${feetToPx(WORLD.widthFt)}px`;
-  plan.style.height = `${feetToPx(WORLD.depthFt)}px`;
+  const activePlan = getActivePlan();
+  const world = getWorld();
+  referencePlan.src = activePlan.image;
+  referencePlan.alt = `${activePlan.name} floor plan reference`;
+  plan.style.width = `${feetToPx(world.widthFt)}px`;
+  plan.style.height = `${feetToPx(world.depthFt)}px`;
   scaleReadout.textContent = "image-calibrated plan";
+  planButtons.forEach((button) => {
+    const isActive = button.dataset.planId === state.planId;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
   renderRooms();
   renderPieces();
   renderSelection();
+}
+
+function switchPlan(planId) {
+  const nextPlanId = resolvePlanId(planId);
+  if (nextPlanId === state.planId) return;
+  state.planId = nextPlanId;
+  state.selectedId = null;
+  state.pieces = [];
+  loadLayoutFromStorage();
+  updateLayoutUrl();
+  renderPresets();
+  render();
+  requestAnimationFrame(fitView);
 }
 
 function startDrag(event) {
@@ -750,6 +863,10 @@ togglePanel.addEventListener("click", () => {
 
 resetView.addEventListener("click", fitView);
 window.addEventListener("resize", fitView);
+
+planButtons.forEach((button) => {
+  button.addEventListener("click", () => switchPlan(button.dataset.planId));
+});
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
