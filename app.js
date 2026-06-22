@@ -1,4 +1,4 @@
-const STORAGE_KEY = "floorplan-layout-v4";
+const STORAGE_KEY = "floorplan-layout-v5";
 const SOURCE_PLAN_SIZE = 1000;
 const PX_PER_FOOT = 19;
 
@@ -26,48 +26,6 @@ function imageRect(id, name, x, y, width, height, label = "") {
   };
 }
 
-function imageDoor(
-  id,
-  name,
-  sweepX,
-  sweepY,
-  sweepWidth,
-  sweepDepth,
-  leafX,
-  leafY,
-  leafWidth,
-  leafHeight,
-  leafRotate = 0,
-  options = {},
-) {
-  return {
-    id,
-    name,
-    x: sweepX / PX_PER_FOOT,
-    y: sweepY / PX_PER_FOOT,
-    widthFt: sweepWidth / PX_PER_FOOT,
-    depthFt: sweepDepth / PX_PER_FOOT,
-    leaf: {
-      x: leafX / PX_PER_FOOT,
-      y: leafY / PX_PER_FOOT,
-      widthFt: leafWidth / PX_PER_FOOT,
-      depthFt: leafHeight / PX_PER_FOOT,
-      rotate: leafRotate,
-    },
-    openLeaf: options.openLeaf
-      ? {
-          x: options.openLeaf.x / PX_PER_FOOT,
-          y: options.openLeaf.y / PX_PER_FOOT,
-          widthFt: options.openLeaf.width / PX_PER_FOOT,
-          depthFt: options.openLeaf.height / PX_PER_FOOT,
-          rotate: options.openLeaf.rotate ?? 0,
-        }
-      : null,
-    showSweep: Boolean(options.showSweep),
-    open: true,
-  };
-}
-
 const exactRooms = [
   imageRect("master", "Master suite", 122, 43, 230, 312, "16'0\" x 12'6\""),
   imageRect("office", "Office/media", 510, 43, 245, 235, "15'7\" x 14'2\""),
@@ -88,31 +46,9 @@ const supportZones = [
   imageRect("right-closet", "Dressing", 835, 474, 144, 153),
 ];
 
-const doors = [
-  imageDoor("master-bath", "Master bath", 350, 96, 58, 62, 354, 101, 5, 52),
-  imageDoor("master-entry", "Master suite", 270, 292, 86, 70, 302, 352, 52, 5, 0, {
-    showSweep: true,
-  }),
-  imageDoor("master-dressing", "Dressing", 326, 254, 45, 50, 354, 258, 5, 42),
-  imageDoor("main-entry", "Entry", 840, 342, 62, 64, 848, 348, 5, 54),
-  imageDoor("laundry", "Laundry", 728, 438, 48, 48, 755, 450, 5, 36),
-  imageDoor("core-bath", "Bath", 582, 525, 58, 62, 588, 531, 5, 52),
-  imageDoor("left-bedroom", "Left bedroom", 628, 600, 82, 82, 682, 622, 74, 5, -50, {
-    openLeaf: { x: 626, y: 632, width: 78, height: 5, rotate: 52 },
-    showSweep: true,
-  }),
-  imageDoor("right-bedroom", "Right bedroom", 774, 600, 82, 82, 758, 622, 74, 5, 50, {
-    openLeaf: { x: 800, y: 632, width: 78, height: 5, rotate: 128 },
-    showSweep: true,
-  }),
-  imageDoor("right-bath", "Bath", 832, 454, 58, 58, 834, 454, 54, 5),
-  imageDoor("right-dressing", "Dressing", 830, 615, 52, 48, 835, 621, 44, 5),
-];
-
 const stage = document.querySelector("#stage");
 const plan = document.querySelector("#plan");
 const roomLayer = document.querySelector("#roomLayer");
-const doorLayer = document.querySelector("#doorLayer");
 const furnitureLayer = document.querySelector("#furnitureLayer");
 const presetGrid = document.querySelector("#presetGrid");
 const snapInput = document.querySelector("#snapInput");
@@ -122,8 +58,6 @@ const selectedSize = document.querySelector("#selectedSize");
 const rotateSelected = document.querySelector("#rotateSelected");
 const duplicateSelected = document.querySelector("#duplicateSelected");
 const deleteSelected = document.querySelector("#deleteSelected");
-const openDoors = document.querySelector("#openDoors");
-const closeDoors = document.querySelector("#closeDoors");
 const clearLayout = document.querySelector("#clearLayout");
 const resetView = document.querySelector("#resetView");
 
@@ -131,7 +65,6 @@ const state = {
   snapInches: Number(snapInput.value),
   selectedId: null,
   pieces: [],
-  doors: doors.map((door) => ({ id: door.id, open: door.open })),
   view: { x: 0, y: 0, zoom: 1 },
 };
 
@@ -167,22 +100,12 @@ function formatInches(inches) {
   return formatFeetValue(inchesToFeet(inches));
 }
 
-function getDoorState(id) {
-  return state.doors.find((door) => door.id === id)?.open ?? true;
-}
-
-function setDoorState(id, open) {
-  const saved = state.doors.find((door) => door.id === id);
-  if (saved) saved.open = open;
-}
-
 function saveLayout() {
   localStorage.setItem(
     STORAGE_KEY,
     JSON.stringify({
       snapInches: state.snapInches,
       pieces: state.pieces,
-      doors: state.doors,
     }),
   );
 }
@@ -194,9 +117,6 @@ function loadLayout() {
   try {
     const saved = JSON.parse(raw);
     if (Array.isArray(saved.pieces)) state.pieces = saved.pieces;
-    if (Array.isArray(saved.doors)) {
-      saved.doors.forEach((door) => setDoorState(door.id, Boolean(door.open)));
-    }
     if (Number.isFinite(saved.snapInches)) state.snapInches = saved.snapInches;
     snapInput.value = state.snapInches;
   } catch {
@@ -245,14 +165,6 @@ function findContainingRoom(piece) {
   return exactRooms.find((room) => rectContains(room, rect));
 }
 
-function getDoorSweep(door) {
-  if (!getDoorState(door.id)) {
-    return { x: door.x, y: door.y, width: 0, height: 0 };
-  }
-
-  return { x: door.x, y: door.y, width: door.widthFt, height: door.depthFt };
-}
-
 function getWarnings(piece) {
   const warnings = [];
   const rect = getPieceRect(piece);
@@ -262,13 +174,6 @@ function getWarnings(piece) {
 
   state.pieces.forEach((other) => {
     if (other.id !== piece.id && rectsIntersect(rect, getPieceRect(other))) warnings.push(`overlaps ${other.name}`);
-  });
-
-  doors.forEach((door) => {
-    const sweep = getDoorSweep(door);
-    if (rectsIntersect(rect, sweep)) {
-      warnings.push(`${door.name} door clearance blocked`);
-    }
   });
 
   return warnings;
@@ -336,8 +241,7 @@ function getRoomAtPoint(preferredPoint, preset) {
 function candidateFits(candidate, size) {
   const rect = { x: candidate.x, y: candidate.y, width: size.width, height: size.height };
   const overlapsPiece = state.pieces.some((piece) => rectsIntersect(rect, getPieceRect(piece)));
-  const blocksDoor = doors.some((door) => rectsIntersect(rect, getDoorSweep(door)));
-  return !overlapsPiece && !blocksDoor;
+  return !overlapsPiece;
 }
 
 function findFreePositionInRoom(preset, room) {
@@ -455,25 +359,6 @@ function renderRooms() {
   });
 }
 
-function renderDoors() {
-  doorLayer.innerHTML = "";
-
-  doors.forEach((door) => {
-    const open = getDoorState(door.id);
-    const sweep = getDoorSweep(door);
-    const sweepEl = document.createElement("div");
-    sweepEl.className = `door-sweep ${open ? "open" : "closed"}`;
-    if (door.showSweep) sweepEl.classList.add("visible-swing");
-    sweepEl.style.left = `${feetToPx(sweep.x)}px`;
-    sweepEl.style.top = `${feetToPx(sweep.y)}px`;
-    sweepEl.style.width = `${feetToPx(sweep.width)}px`;
-    sweepEl.style.height = `${feetToPx(sweep.height)}px`;
-    doorLayer.append(sweepEl);
-
-    sweepEl.setAttribute("aria-label", `${door.name} door clearance ${open ? "shown" : "hidden"}`);
-  });
-}
-
 function renderPresets() {
   presetGrid.innerHTML = "";
   presets.forEach((preset) => {
@@ -538,7 +423,6 @@ function render() {
   plan.style.height = `${feetToPx(WORLD.depthFt)}px`;
   scaleReadout.textContent = "image-calibrated plan";
   renderRooms();
-  renderDoors();
   renderPieces();
   renderSelection();
 }
@@ -581,7 +465,7 @@ function endDrag(event) {
 }
 
 function startPan(event) {
-  if (event.target.closest(".piece") || event.target.closest(".door")) return;
+  if (event.target.closest(".piece")) return;
   stage.setPointerCapture(event.pointerId);
   panState = {
     pointerId: event.pointerId,
@@ -716,28 +600,9 @@ deleteSelected.addEventListener("click", () => {
   render();
 });
 
-openDoors.addEventListener("click", () => {
-  state.doors.forEach((door) => {
-    door.open = true;
-  });
-  saveLayout();
-  render();
-});
-
-closeDoors.addEventListener("click", () => {
-  state.doors.forEach((door) => {
-    door.open = false;
-  });
-  saveLayout();
-  render();
-});
-
 clearLayout.addEventListener("click", () => {
   state.pieces = [];
   state.selectedId = null;
-  state.doors.forEach((door) => {
-    door.open = true;
-  });
   saveLayout();
   render();
 });

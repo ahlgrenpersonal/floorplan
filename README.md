@@ -7,7 +7,6 @@ Floorplan is a small iPhone-oriented PWA for checking whether furniture fits in 
 - The real dimensioned floor-plan image as the visual map, with hidden fit zones used only for placement and warnings.
 - Real-size presets for a king bed, queen bed, full bed, and DaVinci crib.
 - Drag, rotate, duplicate, and delete controls using real-world feet coordinates.
-- Door open/close controls with swing-zone warnings when furniture blocks a doorway.
 - Adjustable snap increment and a clear-layout control for quick retries.
 - Offline PWA support through `sw.js`.
 

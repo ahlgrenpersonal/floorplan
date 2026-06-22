@@ -11,7 +11,7 @@
     <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="assets/icon.svg" />
-    <link rel="stylesheet" href="styles.css?v=20" />
+    <link rel="stylesheet" href="styles.css?v=21" />
   </head>
   <body>
     <main class="app-shell">
@@ -33,7 +33,6 @@
               draggable="false"
             />
             <div class="room-layer" id="roomLayer"></div>
-            <div class="door-layer" id="doorLayer"></div>
             <div class="furniture-layer" id="furnitureLayer"></div>
           </div>
         </div>
@@ -67,15 +66,13 @@
             <span>Snap</span>
             <input id="snapInput" type="range" min="0" max="12" step="1" value="3" />
           </label>
-          <div class="button-row three-up">
-            <button type="button" id="openDoors">Show clearances</button>
-            <button type="button" id="closeDoors">Hide clearances</button>
+          <div class="button-row">
             <button type="button" id="clearLayout" class="danger">Clear</button>
           </div>
         </section>
       </aside>
     </main>
 
-    <script src="app.js?v=20" type="module"></script>
+    <script src="app.js?v=21" type="module"></script>
   </body>
 </html>

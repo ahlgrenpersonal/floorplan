@@ -1,9 +1,9 @@
-const CACHE_NAME = "floorplan-v20";
+const CACHE_NAME = "floorplan-v21";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20",
-  "./app.js?v=20",
+  "./styles.css?v=21",
+  "./app.js?v=21",
   "./manifest.webmanifest",
   "./floor-plan.jpg",
   "./assets/icon.svg",
