@@ -8,11 +8,16 @@ const WORLD = {
 };
 
 const presets = [
-  { type: "king", name: "King bed", widthIn: 76, depthIn: 80, color: "#83d6c8" },
-  { type: "queen", name: "Queen bed", widthIn: 60, depthIn: 80, color: "#f3c35f" },
-  { type: "full", name: "Full bed", widthIn: 54, depthIn: 75, color: "#c7b7ff" },
-  { type: "crib", name: "DaVinci crib", widthIn: 55, depthIn: 31, color: "#f1a7a6" },
-  { type: "sofa", name: "RH Sofa", widthIn: 108, depthIn: 41.5, color: "#9ec5e6" },
+  { type: "king", name: "King bed", label: "King", widthIn: 76, depthIn: 80, color: "#83d6c8" },
+  { type: "queen", name: "Queen bed", label: "Queen", widthIn: 60, depthIn: 80, color: "#f3c35f" },
+  { type: "full", name: "Full bed", label: "Full", widthIn: 54, depthIn: 75, color: "#c7b7ff" },
+  { type: "crib", name: "DaVinci crib", label: "Crib", widthIn: 55, depthIn: 31, color: "#f1a7a6" },
+  { type: "sofa", name: "RH Sofa", label: "Sofa", widthIn: 108, depthIn: 41.5, color: "#9ec5e6" },
+  { type: "tv-stand", name: "TV stand", label: "TV", widthIn: 63, depthIn: 18, color: "#d9b48f" },
+  { type: "nightstand-20-closed", name: "RH Bora 20\" closed nightstand", label: "20\"", widthIn: 20, depthIn: 18, color: "#c5dea3" },
+  { type: "nightstand-26", name: "RH Bora 26\" nightstand", label: "26\"", widthIn: 26, depthIn: 18, color: "#b8d49a" },
+  { type: "nightstand-38", name: "RH Bora 38\" nightstand", label: "38\"", widthIn: 38, depthIn: 18, color: "#aacd8a" },
+  { type: "dresser", name: "RH Bora Dresser", label: "Dresser", widthIn: 72, depthIn: 20, color: "#d1b37a" },
 ];
 
 function imageRect(id, name, x, y, width, height, label = "") {
@@ -119,6 +124,7 @@ function loadLayout() {
         return {
           ...piece,
           name: preset.name,
+          label: preset.label,
           widthIn: preset.widthIn,
           depthIn: preset.depthIn,
           color: preset.color,
@@ -200,6 +206,7 @@ function addPiece(preset, x = WORLD.widthFt / 2, y = WORLD.depthFt / 2) {
     id: uid(),
     type: preset.type,
     name: preset.name,
+    label: preset.label,
     widthIn: preset.widthIn,
     depthIn: preset.depthIn,
     color: preset.color,
@@ -227,6 +234,9 @@ function getPreferredRoomIds(preset) {
   if (preset.type === "queen") return ["bed-left", "master", "bed-right", "office"];
   if (preset.type === "full") return ["bed-right", "bed-left", "office", "master"];
   if (preset.type === "sofa") return ["living", "office", "master"];
+  if (preset.type === "tv-stand") return ["living", "master", "bed-left", "bed-right", "office"];
+  if (preset.type.startsWith("nightstand")) return ["master", "bed-left", "bed-right", "office"];
+  if (preset.type === "dresser") return ["master", "bed-left", "bed-right", "office"];
   return ["bed-left", "bed-right", "master"];
 }
 
@@ -396,7 +406,7 @@ function renderPieces() {
     el.style.setProperty("--piece-color", piece.color);
     el.dataset.id = piece.id;
     el.title = warnings.length ? warnings.join(", ") : "Fits inside exact room bounds";
-    el.textContent = piece.name.replace(" bed", "");
+    el.textContent = piece.label ?? piece.name.replace(" bed", "");
     el.addEventListener("pointerdown", startDrag);
     furnitureLayer.append(el);
   });
