@@ -24,6 +24,7 @@ const presets = [
   { type: "cybex-stroller", name: "Cybex stroller", label: "Cybex", widthIn: 42.3, depthIn: 26, color: "#a7c7b8" },
   { type: "adult-scooter", name: "Adult scooter", label: "Scoot", widthIn: 35, depthIn: 21, color: "#a8b8d8" },
   { type: "micro-scooter", name: "Micro scooter", label: "Micro", widthIn: 23, depthIn: 10.75, color: "#b7a8d8" },
+  { type: "forma-coffee-table", name: "Forma coffee table", label: "Forma", widthIn: 47, depthIn: 27.5, color: "#c8b58f" },
 ];
 
 function imageRect(id, name, x, y, width, height, label = "") {
@@ -248,6 +249,7 @@ function getPreferredRoomIds(preset) {
   if (preset.type === "viv-swivel-chair") return ["living", "master", "bed-left", "bed-right", "office"];
   if (preset.type === "cybex-stroller") return ["living", "master", "office"];
   if (preset.type.endsWith("scooter")) return ["living", "master", "office"];
+  if (preset.type === "forma-coffee-table") return ["living", "office", "master"];
   return ["bed-left", "bed-right", "master"];
 }
 
