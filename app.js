@@ -11,7 +11,7 @@ const presets = [
   { type: "king", name: "King bed", widthIn: 76, depthIn: 80, color: "#83d6c8" },
   { type: "queen", name: "Queen bed", widthIn: 60, depthIn: 80, color: "#f3c35f" },
   { type: "full", name: "Full bed", widthIn: 54, depthIn: 75, color: "#c7b7ff" },
-  { type: "crib", name: "DaVinci crib", widthIn: 52.125, depthIn: 28.125, color: "#f1a7a6" },
+  { type: "crib", name: "DaVinci crib", widthIn: 55, depthIn: 31, color: "#f1a7a6" },
   { type: "sofa", name: "RH Sofa", widthIn: 108, depthIn: 41.5, color: "#9ec5e6" },
 ];
 
@@ -112,7 +112,19 @@ function loadLayout() {
 
   try {
     const saved = JSON.parse(raw);
-    if (Array.isArray(saved.pieces)) state.pieces = saved.pieces;
+    if (Array.isArray(saved.pieces)) {
+      state.pieces = saved.pieces.map((piece) => {
+        const preset = presets.find((item) => item.type === piece.type);
+        if (!preset) return piece;
+        return {
+          ...piece,
+          name: preset.name,
+          widthIn: preset.widthIn,
+          depthIn: preset.depthIn,
+          color: preset.color,
+        };
+      });
+    }
   } catch {
     localStorage.removeItem(STORAGE_KEY);
   }
