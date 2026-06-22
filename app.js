@@ -12,6 +12,7 @@ const presets = [
   { type: "queen", name: "Queen bed", widthIn: 60, depthIn: 80, color: "#f3c35f" },
   { type: "full", name: "Full bed", widthIn: 54, depthIn: 75, color: "#c7b7ff" },
   { type: "crib", name: "DaVinci crib", widthIn: 52.125, depthIn: 28.125, color: "#f1a7a6" },
+  { type: "sofa", name: "RH Sofa", widthIn: 108, depthIn: 41.5, color: "#9ec5e6" },
 ];
 
 function imageRect(id, name, x, y, width, height, label = "") {
@@ -87,15 +88,13 @@ function inchesToPx(inches) {
   return feetToPx(inchesToFeet(inches));
 }
 
-function formatFeetValue(feet) {
-  const wholeFeet = Math.floor(feet);
-  const inches = Math.round((feet - wholeFeet) * 12);
-  if (inches === 12) return `${wholeFeet + 1}'0"`;
-  return `${wholeFeet}'${inches}"`;
-}
-
 function formatInches(inches) {
-  return formatFeetValue(inchesToFeet(inches));
+  const wholeFeet = Math.floor(inches / 12);
+  const remainingInches = Number((inches - wholeFeet * 12).toFixed(3));
+  const inchText = Number.isInteger(remainingInches)
+    ? String(remainingInches)
+    : String(remainingInches).replace(/0+$/, "");
+  return `${wholeFeet}'${inchText}"`;
 }
 
 function saveLayout() {
@@ -215,6 +214,7 @@ function getPreferredRoomIds(preset) {
   if (preset.type === "king") return ["master", "bed-left", "bed-right", "living"];
   if (preset.type === "queen") return ["bed-left", "master", "bed-right", "office"];
   if (preset.type === "full") return ["bed-right", "bed-left", "office", "master"];
+  if (preset.type === "sofa") return ["living", "office", "master"];
   return ["bed-left", "bed-right", "master"];
 }
 
