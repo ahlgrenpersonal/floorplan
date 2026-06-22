@@ -1,4 +1,6 @@
 const STORAGE_KEY = "floorplan-layout-v5";
+const URL_LAYOUT_PARAM = "layout";
+const URL_LAYOUT_VERSION = 1;
 const SOURCE_PLAN_SIZE = 1000;
 const PX_PER_FOOT = 19;
 
@@ -11,20 +13,20 @@ const presets = [
   { type: "king", name: "King bed", label: "King", widthIn: 76, depthIn: 80, color: "#83d6c8" },
   { type: "queen", name: "Queen bed", label: "Queen", widthIn: 60, depthIn: 80, color: "#f3c35f" },
   { type: "full", name: "Full bed", label: "Full", widthIn: 54, depthIn: 75, color: "#c7b7ff" },
-  { type: "crib", name: "DaVinci crib", label: "Crib", widthIn: 55, depthIn: 31, color: "#f1a7a6" },
-  { type: "sofa", name: "RH Sofa", label: "Sofa", widthIn: 108, depthIn: 41.5, color: "#9ec5e6" },
-  { type: "forma-coffee-table", name: "Forma coffee table", label: "Forma", widthIn: 47, depthIn: 27.5, color: "#c8b58f" },
-  { type: "viv-swivel-chair", name: "Viv swivel chair", label: "Viv", widthIn: 29.5, depthIn: 31, color: "#f0b6a6" },
+  { type: "crib", name: "DaVinci crib", displayName: "Crib", label: "Crib", widthIn: 55, depthIn: 31, color: "#f1a7a6" },
+  { type: "sofa", name: "RH Sofa", displayName: "Sofa", label: "Sofa", widthIn: 108, depthIn: 41.5, color: "#9ec5e6" },
+  { type: "forma-coffee-table", name: "Forma coffee table", displayName: "Coffee Table", label: "Coffee\nTable", widthIn: 47, depthIn: 27.5, color: "#c8b58f" },
+  { type: "viv-swivel-chair", name: "Viv swivel chair", displayName: "Swivel chair", label: "Chair", widthIn: 29.5, depthIn: 31, color: "#f0b6a6" },
   { type: "tv-stand", name: "TV stand", label: "TV", widthIn: 63, depthIn: 18, color: "#d9b48f" },
-  { type: "nightstand-20-closed", name: "RH Bora 20\" closed nightstand", label: "20\"", widthIn: 20, depthIn: 18, color: "#c5dea3" },
-  { type: "nightstand-26", name: "RH Bora 26\" nightstand", label: "26\"", widthIn: 26, depthIn: 18, color: "#b8d49a" },
-  { type: "nightstand-38", name: "RH Bora 38\" nightstand", label: "38\"", widthIn: 38, depthIn: 18, color: "#aacd8a" },
-  { type: "dresser", name: "RH Bora Dresser", label: "Dresser", widthIn: 72, depthIn: 20, color: "#d1b37a" },
-  { type: "cosmo-dresser-kids", name: "Cosmo Dresser (kids)", label: "Cosmo", widthIn: 56, depthIn: 19, color: "#e1c27b" },
-  { type: "cosmo-nightstand-kids", name: "Cosmo Nightstand (kids)", label: "Cosmo NS", widthIn: 22.5, depthIn: 18, color: "#d8cf88" },
-  { type: "dining-table-long", name: "Miles Dining Table (long)", label: "80\"", widthIn: 80, depthIn: 43, color: "#d6c28f" },
-  { type: "dining-table-short", name: "Miles Dining Table (short)", label: "60\"", widthIn: 60, depthIn: 43, color: "#cdb87b" },
-  { type: "cybex-stroller", name: "Cybex stroller", label: "Cybex", widthIn: 42.3, depthIn: 26, color: "#a7c7b8" },
+  { type: "nightstand-20-closed", name: "RH Bora 20\" closed nightstand", displayName: "20\" closed nightstand", label: "20\"", widthIn: 20, depthIn: 18, color: "#c5dea3" },
+  { type: "nightstand-26", name: "RH Bora 26\" nightstand", displayName: "26\" nightstand", label: "26\"", widthIn: 26, depthIn: 18, color: "#b8d49a" },
+  { type: "nightstand-38", name: "RH Bora 38\" nightstand", displayName: "38\" nightstand", label: "38\"", widthIn: 38, depthIn: 18, color: "#aacd8a" },
+  { type: "dresser", name: "RH Bora Dresser", displayName: "Dresser", label: "Dresser", widthIn: 72, depthIn: 20, color: "#d1b37a" },
+  { type: "cosmo-dresser-kids", name: "Cosmo Dresser (kids)", displayName: "Dresser (kids)", label: "Kids\nDresser", widthIn: 56, depthIn: 19, color: "#e1c27b" },
+  { type: "cosmo-nightstand-kids", name: "Cosmo Nightstand (kids)", displayName: "Nightstand (kids)", label: "Kids\nNS", widthIn: 22.5, depthIn: 18, color: "#d8cf88" },
+  { type: "dining-table-long", name: "Miles Dining Table (long)", displayName: "Dining Table (long)", label: "80\"", widthIn: 80, depthIn: 43, color: "#d6c28f" },
+  { type: "dining-table-short", name: "Miles Dining Table (short)", displayName: "Dining Table (short)", label: "60\"", widthIn: 60, depthIn: 43, color: "#cdb87b" },
+  { type: "cybex-stroller", name: "Cybex stroller", displayName: "Stroller", label: "Stroller", widthIn: 42.3, depthIn: 26, color: "#a7c7b8" },
   { type: "adult-scooter", name: "Adult scooter", label: "Scoot", widthIn: 35, depthIn: 21, color: "#a8b8d8" },
   { type: "micro-scooter", name: "Micro scooter", label: "Micro", widthIn: 23, depthIn: 10.75, color: "#b7a8d8" },
 ];
@@ -114,6 +116,84 @@ function formatInches(inches) {
   return `${wholeFeet}'${inchText}"`;
 }
 
+function getDisplayName(item) {
+  return item.displayName ?? item.name;
+}
+
+function getPieceLabel(item) {
+  return item.label ?? getDisplayName(item).replace(" bed", "");
+}
+
+function roundForUrl(value) {
+  return Number(value.toFixed(4));
+}
+
+function encodeBase64Url(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function decodeBase64Url(value) {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function pieceFromStored(rawPiece) {
+  const type = rawPiece.type ?? rawPiece.t;
+  const preset = presets.find((item) => item.type === type);
+  const piece = {
+    id: rawPiece.id ?? uid(),
+    type,
+    name: preset?.name ?? rawPiece.name ?? rawPiece.n ?? "Furniture",
+    displayName: preset?.displayName ?? rawPiece.displayName ?? rawPiece.dn,
+    label: preset?.label ?? rawPiece.label ?? rawPiece.l,
+    widthIn: Number(preset?.widthIn ?? rawPiece.widthIn ?? rawPiece.w),
+    depthIn: Number(preset?.depthIn ?? rawPiece.depthIn ?? rawPiece.d),
+    color: preset?.color ?? rawPiece.color ?? rawPiece.c ?? "#d8dee9",
+    x: Number(rawPiece.x),
+    y: Number(rawPiece.y),
+    rotated: Boolean(rawPiece.rotated ?? rawPiece.r),
+  };
+
+  if (!piece.type || !Number.isFinite(piece.widthIn) || !Number.isFinite(piece.depthIn)) return null;
+  if (!Number.isFinite(piece.x) || !Number.isFinite(piece.y)) return null;
+  return piece;
+}
+
+function serializeLayoutForUrl() {
+  return {
+    v: URL_LAYOUT_VERSION,
+    p: state.pieces.map((piece) => ({
+      t: piece.type,
+      x: roundForUrl(piece.x),
+      y: roundForUrl(piece.y),
+      r: piece.rotated ? 1 : 0,
+      w: piece.widthIn,
+      d: piece.depthIn,
+      n: piece.name,
+      dn: piece.displayName,
+      l: piece.label,
+      c: piece.color,
+    })),
+  };
+}
+
+function updateLayoutUrl() {
+  const url = new URL(window.location.href);
+  if (state.pieces.length) {
+    url.searchParams.set(URL_LAYOUT_PARAM, encodeBase64Url(JSON.stringify(serializeLayoutForUrl())));
+  } else {
+    url.searchParams.delete(URL_LAYOUT_PARAM);
+  }
+  window.history.replaceState(null, "", url);
+}
+
 function saveLayout() {
   localStorage.setItem(
     STORAGE_KEY,
@@ -121,31 +201,46 @@ function saveLayout() {
       pieces: state.pieces,
     }),
   );
+  updateLayoutUrl();
 }
 
-function loadLayout() {
+function loadLayoutFromUrl() {
+  const encoded = new URLSearchParams(window.location.search).get(URL_LAYOUT_PARAM);
+  if (!encoded) return false;
+
+  try {
+    const decoded = JSON.parse(decodeBase64Url(encoded));
+    const rawPieces = Array.isArray(decoded.p) ? decoded.p : decoded.pieces;
+    if (!Array.isArray(rawPieces)) return false;
+    state.pieces = rawPieces.map(pieceFromStored).filter(Boolean);
+    state.selectedId = null;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ pieces: state.pieces }));
+    updateLayoutUrl();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function loadLayoutFromStorage() {
   const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return;
+  if (!raw) return false;
 
   try {
     const saved = JSON.parse(raw);
     if (Array.isArray(saved.pieces)) {
-      state.pieces = saved.pieces.map((piece) => {
-        const preset = presets.find((item) => item.type === piece.type);
-        if (!preset) return piece;
-        return {
-          ...piece,
-          name: preset.name,
-          label: preset.label,
-          widthIn: preset.widthIn,
-          depthIn: preset.depthIn,
-          color: preset.color,
-        };
-      });
+      state.pieces = saved.pieces.map(pieceFromStored).filter(Boolean);
+      updateLayoutUrl();
+      return true;
     }
   } catch {
     localStorage.removeItem(STORAGE_KEY);
   }
+  return false;
+}
+
+function loadLayout() {
+  if (!loadLayoutFromUrl()) loadLayoutFromStorage();
 }
 
 function getPieceSize(piece) {
@@ -218,6 +313,7 @@ function addPiece(preset, x = WORLD.widthFt / 2, y = WORLD.depthFt / 2) {
     id: uid(),
     type: preset.type,
     name: preset.name,
+    displayName: preset.displayName,
     label: preset.label,
     widthIn: preset.widthIn,
     depthIn: preset.depthIn,
@@ -398,9 +494,10 @@ function renderPresets() {
     button.className = "preset";
     button.type = "button";
     const sizeLabel = `${formatInches(preset.widthIn)} x ${formatInches(preset.depthIn)}`;
-    button.title = `${preset.name} ${sizeLabel}`;
-    button.setAttribute("aria-label", `${preset.name} ${sizeLabel}`);
-    button.innerHTML = `<strong>${preset.name}</strong><span>${sizeLabel}</span>`;
+    const displayName = getDisplayName(preset);
+    button.title = `${displayName} ${sizeLabel}`;
+    button.setAttribute("aria-label", `${displayName} ${sizeLabel}`);
+    button.innerHTML = `<strong>${displayName}</strong><span>${sizeLabel}</span>`;
     button.addEventListener("click", () => {
       const center = getStageCenterPoint();
       const drop = findDropPosition(preset, center);
@@ -426,7 +523,7 @@ function renderPieces() {
     el.style.setProperty("--piece-color", piece.color);
     el.dataset.id = piece.id;
     el.title = warnings.length ? warnings.join(", ") : "Fits inside exact room bounds";
-    el.textContent = piece.label ?? piece.name.replace(" bed", "");
+    el.textContent = getPieceLabel(piece);
     el.addEventListener("pointerdown", startDrag);
     furnitureLayer.append(el);
   });
@@ -449,7 +546,7 @@ function renderSelection() {
   const room = findContainingRoom(selected);
   const warnings = getWarnings(selected);
   const status = warnings.length ? warnings[0] : `fits in ${room?.name ?? "world"}`;
-  selectedName.textContent = selected.name;
+  selectedName.textContent = getDisplayName(selected);
   selectedSize.textContent = `${formatInches(size.widthIn)} x ${formatInches(size.depthIn)} | ${status}`;
 }
 
