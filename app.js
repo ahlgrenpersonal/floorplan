@@ -110,9 +110,41 @@ function createPlanF() {
   };
 }
 
+function createPlanM() {
+  const pxPerFoot = 15.2;
+  return {
+    id: "M",
+    name: "M",
+    image: "floor-plan-m.png",
+    sourceWidth: 787,
+    sourceHeight: 785,
+    pxPerFoot,
+    exactRooms: [
+      labeledRoom(pxPerFoot, "living", "Living/dining", 110, 73, 13, 29, "29'0\" x 13'0\""),
+      labeledRoom(pxPerFoot, "bed-top", "Bedroom", 321, 24, 11.167, 12.833, "12'10\" x 11'2\""),
+      labeledRoom(pxPerFoot, "kitchen", "Kitchen", 319, 255, 10.333, 9.417, "10'4\" x 9'5\""),
+      labeledRoom(pxPerFoot, "gallery", "Gallery", 429, 407, 23, 5, "23'0\" x 5'0\""),
+      labeledRoom(pxPerFoot, "master", "Master suite", 110, 502, 13, 16.5, "16'6\" x 13'0\""),
+      labeledRoom(pxPerFoot, "office", "Office/media", 532, 543, 9, 13.5, "13'6\" x 9'0\""),
+    ],
+    supportZones: [
+      imageRect(pxPerFoot, "balcony", "Balcony", 19, 320, 92, 361),
+      imageRect(pxPerFoot, "top-bath", "Bath", 297, 24, 109, 153),
+      imageRect(pxPerFoot, "bed-closet", "Closet", 320, 204, 119, 52),
+      imageRect(pxPerFoot, "right-bath", "Bath", 433, 254, 98, 152),
+      imageRect(pxPerFoot, "master-entry", "Entry", 265, 487, 126, 106),
+      imageRect(pxPerFoot, "master-dressing-1", "Dressing", 321, 487, 75, 93),
+      imageRect(pxPerFoot, "master-dressing-2", "Dressing", 321, 624, 77, 118),
+      imageRect(pxPerFoot, "bath-core", "Bath/core", 398, 487, 134, 255),
+      imageRect(pxPerFoot, "mechanical", "Mechanical", 471, 487, 63, 124),
+    ],
+  };
+}
+
 const floorPlans = {
   H: createPlanH(),
   F: createPlanF(),
+  M: createPlanM(),
 };
 
 const stage = document.querySelector("#stage");
